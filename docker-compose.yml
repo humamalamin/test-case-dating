@@ -1,0 +1,39 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    platform: linux/arm64/v8
+    restart: always
+    image: mysql:latest
+    container_name: mysql-docker
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_dating
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: "mysql --user=user --password=root -e 'SHOW DATABASES;'"
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+volumes:
+  db:
+    driver: local
